@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body style="padding: 20px;">
+
+    <div class="card">
+        <div class="user-detail">
+            <img class="user"
+                src="https://images.unsplash.com/photo-1664574653006-4d7eb5f1a418?ixlib=rb-1.2.1&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80"
+                alt="">
+            <h4 id="showUsername">Bearbug User</h4>
+        </div>
+        <div id="render" class="renderchat">
+        </div>
+        <div class="sendmsg">
+            <input id="txtMsg" class="form-control" placeholder="Message..." type="text">
+            <button id="btnSend" class="btn-primary">Send</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
+        import { getDatabase, set, push, ref, onValue } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-database.js";
+       
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmbzPdsV36S-0C4yVYEWvzGMjBmAQBjCQ",
+            authDomain: "cow-chat.firebaseapp.com",
+            projectId: "cow-chat",
+            storageBucket: "cow-chat.appspot.com",
+            messagingSenderId: "947806308507",
+            appId: "1:947806308507:web:f4e4ccb34fc6d133bade3e",
+            measurementId: "G-Z7ZD0B9265",
+            databaseURL: "https://cow-chat-default-rtdb.asia-southeast1.firebasedatabase.app/",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app)
+
+        const user = window.prompt('Your name : ')
+        console.log(user)
+        document.querySelector('#showUsername').innerHTML = user;
+
+        const btnSend = document.querySelector('#btnSend')
+        const txtMsg = document.querySelector('#txtMsg')
+
+        btnSend.addEventListener('click', () => {
+            set(push(ref(db, 'room1')), {
+                username: user,
+                msg: txtMsg.value
+            })
+            txtMsg.value = '';
+        })
+
+        onValue(ref(db, 'room1'), (snapshot) => {
+            const data = snapshot.val();
+            var html = '';
+            snapshot.forEach((childSnapshot) => {
+                console.log("childSnapshot : " ,childSnapshot);
+                var key = childSnapshot.key;
+                var val = childSnapshot.val();
+                if (data[key].username != user) {
+                    console.log('not my message')
+                    html += `<div class="chat-incoming">
+                                <img class="user" style="width: 30px; height: 30px;" src="https://images.unsplash.com/photo-1664574653006-4d7eb5f1a418?ixlib=rb-1.2.1&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80" alt="">
+                                <span>${data[key].msg}</span>
+                            </div>`
+                } else {
+                    console.log('my message')
+                    html += `<div class="chat-outcoming">
+                                <span>${data[key].msg}</span>
+                                <img class="user" style="width: 30px; height: 30px;" src="https://images.unsplash.com/photo-1664574653006-4d7eb5f1a418?ixlib=rb-1.2.1&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80" alt="">
+                            </div>`
+                }
+            })
+            document.querySelector('#render').innerHTML = html;
+        })
+
+
+    </script>
+
+</body>
+
+</html>
